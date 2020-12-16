@@ -1,0 +1,234 @@
+---
+swagger: "2.0"
+info:
+  description: "The API for the Roundabout Parking Project"
+  version: "1.0.0"
+  title: "parking-iot-api"
+host: "1zzcls94zi.execute-api.us-east-1.amazonaws.com"
+basePath: "/prod"
+schemes:
+- "https"
+paths:
+  /closest:
+    post:
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "ClosestMeterRequest"
+        required: true
+        schema:
+          $ref: "#/definitions/ClosestMeterRequest"
+      responses:
+        200:
+          description: "200 response"
+      x-amazon-apigateway-integration:
+        type: "aws"
+        uri: "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:695804549552:function:getClosest/invocations"
+        responses:
+          default:
+            statusCode: "200"
+            responseTemplates:
+              application/json: "#set($inputRoot = $input.path('$'))\n$util.parseJson($input.json('$.body'))"
+        requestTemplates:
+          application/json: "{\r\n  \"body\" : $input.json('$'),\r\n  \"headers\"\
+            : {\r\n    #foreach($header in $input.params().header.keySet())\r\n  \
+            \  \"$header\": \"$util.escapeJavaScript($input.params().header.get($header))\"\
+            \ #if($foreach.hasNext),#end\r\n\r\n    #end\r\n  },\r\n  \"method\":\
+            \ \"$context.httpMethod\",\r\n  \"params\": {\r\n    #foreach($param in\
+            \ $input.params().path.keySet())\r\n    \"$param\": \"$util.escapeJavaScript($input.params().path.get($param))\"\
+            \ #if($foreach.hasNext),#end\r\n\r\n    #end\r\n  },\r\n  \"query\": {\r\
+            \n    #foreach($queryParam in $input.params().querystring.keySet())\r\n\
+            \    \"$queryParam\": \"$util.escapeJavaScript($input.params().querystring.get($queryParam))\"\
+            \ #if($foreach.hasNext),#end\r\n\r\n    #end\r\n  }  \r\n}"
+        passthroughBehavior: "when_no_templates"
+        httpMethod: "POST"
+        contentHandling: "CONVERT_TO_TEXT"
+  /meters:
+    get:
+      tags:
+      - "Meter"
+      description: "Returns all Meters"
+      operationId: "getAllMeters"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "All meters"
+          schema:
+            $ref: "#/definitions/Meter"
+      x-amazon-apigateway-integration:
+        type: "aws_proxy"
+        uri: "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:695804549552:function:getMeters/invocations"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        contentHandling: "CONVERT_TO_TEXT"
+  /meters/{meterid}:
+    get:
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "meterid"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "All meters"
+      x-amazon-apigateway-integration:
+        type: "aws"
+        uri: "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:695804549552:function:getMeter/invocations"
+        responses:
+          default:
+            statusCode: "200"
+            responseTemplates:
+              application/json: "#set($inputRoot = $input.path('$'))\n$util.parseJson($input.json('$.body'))"
+        requestParameters:
+          integration.request.path.meterid: "method.request.path.meterid"
+        requestTemplates:
+          application/json: "{\r\n  \"body\" : $input.json('$'),\r\n  \"headers\"\
+            : {\r\n    #foreach($header in $input.params().header.keySet())\r\n  \
+            \  \"$header\": \"$util.escapeJavaScript($input.params().header.get($header))\"\
+            \ #if($foreach.hasNext),#end\r\n\r\n    #end\r\n  },\r\n  \"method\":\
+            \ \"$context.httpMethod\",\r\n  \"params\": {\r\n    #foreach($param in\
+            \ $input.params().path.keySet())\r\n    \"$param\": \"$util.escapeJavaScript($input.params().path.get($param))\"\
+            \ #if($foreach.hasNext),#end\r\n\r\n    #end\r\n  },\r\n  \"query\": {\r\
+            \n    #foreach($queryParam in $input.params().querystring.keySet())\r\n\
+            \    \"$queryParam\": \"$util.escapeJavaScript($input.params().querystring.get($queryParam))\"\
+            \ #if($foreach.hasNext),#end\r\n\r\n    #end\r\n  }  \r\n}"
+        passthroughBehavior: "never"
+        httpMethod: "POST"
+        contentHandling: "CONVERT_TO_TEXT"
+definitions:
+  Meter:
+    type: "object"
+    properties:
+      meterid:
+        type: "string"
+      isoccupied:
+        type: "boolean"
+        default: false
+      address:
+        type: "string"
+      latitude:
+        type: "number"
+        format: "double"
+      longitude:
+        type: "number"
+        format: "double"
+      number:
+        type: "integer"
+        format: "int32"
+  ClosestMeterRequest:
+    type: "object"
+    properties:
+      latitude:
+        type: "number"
+        format: "double"
+      longitude:
+        type: "number"
+        format: "double"
+x-amazon-apigateway-documentation:
+  version: "1.0"
+  createdDate: "2020-12-16T18:29:23Z"
+  documentationParts:
+  - location:
+      type: "API"
+    properties:
+      info:
+        description: "The API for the Roundabout Parking Project"
+  - location:
+      type: "METHOD"
+      path: "/meters/closest"
+      method: "GET"
+    properties:
+      tags:
+      - "Meter"
+      description: "Returns closest available Meter"
+  - location:
+      type: "METHOD"
+      path: "/meters/{meterID}/data"
+      method: "GET"
+    properties:
+      tags:
+      - "Meter"
+      description: "Returns Meter data"
+  - location:
+      type: "METHOD"
+      path: "/meters/{meterID}"
+      method: "GET"
+    properties:
+      tags:
+      - "Meter"
+      description: "Returns a registered Meter"
+  - location:
+      type: "METHOD"
+      path: "/meters"
+      method: "GET"
+    properties:
+      tags:
+      - "Meter"
+      description: "Returns all Meters"
+  - location:
+      type: "PATH_PARAMETER"
+      path: "/meters/{meterID}/data"
+      method: "GET"
+      name: "meterID"
+    properties:
+      description: "ID of Meter"
+  - location:
+      type: "PATH_PARAMETER"
+      path: "/meters/{meterID}"
+      method: "GET"
+      name: "meterID"
+    properties:
+      description: "ID of Meter"
+  - location:
+      type: "QUERY_PARAMETER"
+      path: "/meters/closest"
+      method: "GET"
+      name: "latitude"
+    properties:
+      description: "Latitude"
+  - location:
+      type: "QUERY_PARAMETER"
+      path: "/meters/closest"
+      method: "GET"
+      name: "longitude"
+    properties:
+      description: "Longitude"
+  - location:
+      type: "RESPONSE"
+      path: "/meters/closest"
+      method: "GET"
+      statusCode: "200"
+    properties:
+      description: "A meter"
+  - location:
+      type: "RESPONSE"
+      path: "/meters/{meterID}/data"
+      method: "GET"
+      statusCode: "200"
+    properties:
+      description: "A meters data"
+  - location:
+      type: "RESPONSE"
+      path: "/meters/{meterID}"
+      method: "GET"
+      statusCode: "200"
+    properties:
+      description: "A meter"
+  - location:
+      type: "RESPONSE"
+      path: "/meters"
+      method: "GET"
+      statusCode: "200"
+    properties:
+      description: "All meters"
